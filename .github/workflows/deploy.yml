@@ -16,9 +16,20 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
       - name: Install dependencies
-        uses: bahmutov/npm-install@v1
+        run: npm install
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run type checks
+        run: npm run type-check
+
+      - name: Run unit tests
+        run: npm run test-unit
 
       - name: Build project
         run: npm run build
