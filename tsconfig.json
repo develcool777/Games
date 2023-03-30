@@ -1,0 +1,22 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.test.ts", "src/**/*.vue", "test/**/*spec.ts", "env.d.ts"],
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Node",
+		"sourceMap": true,
+		"noImplicitAny": false,
+    "baseUrl": ".",
+    "lib": ["dom", "dom.iterable", "ESNext"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@test/*": ["test/*"]
+    },
+    "ignoreDeprecations": "5.0"
+  },
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
