@@ -6,13 +6,13 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   base: '/Games/',
   plugins: [vue()],
-  // css: {
-  //   preprocessorOptions: {
-  //     scss: {
-  //       additionalData: '@import "./src/sass/main.scss";',
-  //     },
-  //   },
-  // },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "./src/sass/main.scss";`
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

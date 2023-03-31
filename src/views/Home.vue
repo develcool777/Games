@@ -1,19 +1,16 @@
 <template>
-  <Header />
-  <router-view></router-view>
+  <div class=""></div>
 </template>
 
 <script lang="ts">
   import { defineComponent } from 'vue';
-  import Header from '@/layouts/Header.vue';
 
   export default defineComponent({
-    name: 'App',
-    components: {
-      Header,
-    },
+    name: 'Home',
     setup() {
       return {};
     },
   });
 </script>
+
+<style lang="scss" scoped></style>

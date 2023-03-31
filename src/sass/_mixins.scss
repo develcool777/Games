@@ -1,0 +1,15 @@
+@mixin Flex($var1: false, $var2: false, $var3: false) {
+  display: flex;
+
+  @if $var1 {
+    flex-direction: $var1;
+  }
+
+  @if $var2 {
+    justify-content: $var2;
+  }
+
+  @if $var3 {
+    align-items: $var3;
+  }
+}
