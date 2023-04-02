@@ -6,6 +6,7 @@ export type Result = Cell | 'd';
 export type Mode = 'easy' | 'hard';
 export type Index = 0 | 1 | 2;
 export type GameStatus = '' | 'start' | 'finish';
+export type BoardSize = 3 | 5 | 7;
 
 export interface Coordinates {
   x: Index;

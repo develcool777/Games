@@ -44,7 +44,7 @@
   });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .header {
     @include Flex(row, flex-start, center);
     width: 100%;

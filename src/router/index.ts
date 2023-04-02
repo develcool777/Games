@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '@/views/Home.vue';
+
+const lazyLoad = (componentName: string) => {
+  const pages = import.meta.glob('/src/views/*.vue');
+  const key = `/src/views/${componentName}.vue`;
+  return pages[key];
+};
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +12,26 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Home,
+      component: lazyLoad('Home'),
+      meta: {
+        title: 'Games',
+      },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'PageNotFound',
+      component: lazyLoad('PageNotFound'),
+      meta: {
+        title: 'Page Not Found',
+      },
+    },
+    {
+      path: '/tic-tac-toe',
+      name: 'TicTacToe',
+      component: lazyLoad('TicTacToe'),
+      meta: {
+        title: 'Tic Tac Toe',
+      },
     },
   ],
 });

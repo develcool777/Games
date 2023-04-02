@@ -1,18 +1,22 @@
 <template>
-  <div class="">
-    <router-link to="/tic-tac-toe">TicTacToe</router-link>
-  </div>
+  <main class="main">
+    <slot></slot>
+  </main>
 </template>
 
 <script lang="ts">
   import { defineComponent } from 'vue';
 
   export default defineComponent({
-    name: 'Home',
+    name: 'Main',
     setup() {
       return {};
     },
   });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+  .main {
+    flex: 1;
+  }
+</style>

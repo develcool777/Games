@@ -17,3 +17,11 @@
     },
   });
 </script>
+
+<style lang="scss">
+  #app {
+    height: 100vh;
+    width: 100%;
+    @include Flex(column, false, false);
+  }
+</style>
