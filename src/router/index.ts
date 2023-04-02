@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 const lazyLoad = (componentName: string) => {
   const pages = import.meta.glob('/src/views/*.vue');
@@ -7,7 +7,7 @@ const lazyLoad = (componentName: string) => {
 };
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
