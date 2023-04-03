@@ -9,6 +9,7 @@ export default class Game {
   private history: Ref<Move[]>;
   private computer: Ref<Computer>;
   private gameStatus: Ref<GameStatus>;
+  private winCells: Ref<Coordinates[]>;
 
   public constructor() {
     this.player = ref('x');
@@ -26,6 +27,7 @@ export default class Game {
     this.gameStatus = ref('');
     this.boardSize = ref(3);
     this.history = ref([]);
+    this.winCells = ref([]);
   }
 
   public get getPlayer(): Player {
@@ -52,6 +54,10 @@ export default class Game {
     return this.history.value.length;
   }
 
+  public get getWinCells(): number[] {
+    return this.winCells.value.map(cell => this.index2Dto1D(cell));
+  }
+
   private get amoutOfCells(): number {
     return Math.pow(this.boardSize.value, 2);
   }
@@ -74,6 +80,10 @@ export default class Game {
       x: Math.floor(index / this.boardSize.value) as Index,
       y: (index % this.boardSize.value) as Index,
     };
+  };
+
+  public index2Dto1D = (coordinates: Coordinates): number => {
+    return coordinates.x * this.boardSize.value + coordinates.y;
   };
 
   public userMove = (coordinates: Coordinates) => {
@@ -118,6 +128,7 @@ export default class Game {
     ];
     this.gameStatus.value = '';
     this.history.value = [];
+    this.winCells.value = [];
   };
 
   public returnMove = (): void => {
@@ -144,21 +155,61 @@ export default class Game {
   private defineResult = (): Result => {
     if (this.getHistoryLength < 5) return '';
     const isWin = (a: Cell, b: Cell, c: Cell): boolean => a === b && b === c && a !== '';
+    const defineWin = (type: 'row' | 'col' | 'd1' | 'd2', index?: number): void => {
+      this.winCells.value.push(
+        ...(b.map((_, i) => {
+          switch (type) {
+            case 'row':
+              return { x: index, y: i };
+            case 'col':
+              return { x: i, y: index };
+            case 'd1':
+              return { x: i, y: i };
+            case 'd2':
+              return { x: i, y: 2 - i };
+          }
+        }) as Coordinates[])
+      );
+    };
     const b = this.board.value;
 
     // rows
-    if (isWin(...b[0])) return b[0][0];
-    if (isWin(...b[1])) return b[1][0];
-    if (isWin(...b[2])) return b[2][0];
+    if (isWin(...b[0])) {
+      defineWin('row', 0);
+      return b[0][0];
+    }
+    if (isWin(...b[1])) {
+      defineWin('row', 1);
+      return b[1][0];
+    }
+    if (isWin(...b[2])) {
+      defineWin('row', 2);
+      return b[2][0];
+    }
 
     // cols
-    if (isWin(...(b.map(row => row[0]) as Row))) return b[0][0];
-    if (isWin(...(b.map(row => row[1]) as Row))) return b[0][1];
-    if (isWin(...(b.map(row => row[2]) as Row))) return b[0][2];
+    if (isWin(...(b.map(row => row[0]) as Row))) {
+      defineWin('col', 0);
+      return b[0][0];
+    }
+    if (isWin(...(b.map(row => row[1]) as Row))) {
+      defineWin('col', 1);
+      return b[0][1];
+    }
+    if (isWin(...(b.map(row => row[2]) as Row))) {
+      defineWin('col', 2);
+      return b[0][2];
+    }
 
     // diagonals
-    if (isWin(b[0][0], b[1][1], b[2][2])) return b[1][1];
-    if (isWin(b[0][2], b[1][1], b[2][0])) return b[1][1];
+    if (isWin(b[0][0], b[1][1], b[2][2])) {
+      defineWin('d1');
+      return b[1][1];
+    }
+    if (isWin(b[0][2], b[1][1], b[2][0])) {
+      defineWin('d2');
+      return b[1][1];
+    }
 
     // draw
     if (this.getHistoryLength === this.amoutOfCells) return 'd';
@@ -173,6 +224,5 @@ export default class Game {
 
   public finishGame = (): void => {
     this.gameStatus.value = 'finish';
-    // this.reset();
   };
 }

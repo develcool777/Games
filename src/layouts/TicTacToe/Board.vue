@@ -1,6 +1,13 @@
 <template>
   <section class="field">
-    <Cell v-for="(cell, i) in board.flat()" :gameStatus="gameStatus" :player="player" :cell="cell" :key="i" @click="makeMove(i)" />
+    <Cell
+      v-for="(cell, i) in board.flat()"
+      :gameStatus="gameStatus"
+      :player="player"
+      :isWin="winCells.includes(i)"
+      :cell="cell"
+      :key="i"
+      @click="makeMove(i)" />
     <div class="field__line v1"></div>
     <div class="field__line v2"></div>
     <div class="field__line horizontal h1"></div>
@@ -29,6 +36,10 @@
       },
       player: {
         type: String as PropType<Player>,
+        required: true,
+      },
+      winCells: {
+        type: Array as PropType<number[]>,
         required: true,
       },
     },

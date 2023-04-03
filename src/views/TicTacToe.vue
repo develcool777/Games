@@ -1,6 +1,9 @@
 <template>
   <Main class="tic">
-    <Board :player="g.getPlayer" :gameStatus="g.getGameStatus" :board="g.getBoard" @makeMove="g.userMove(g.index1DTo2D($event))" />
+    <div class="tic__game">
+      <Result :result="g.getResult" :player="g.getPlayer" />
+      <Board :winCells="g.getWinCells" :player="g.getPlayer" :gameStatus="g.getGameStatus" :board="g.getBoard" @makeMove="g.userMove(g.index1DTo2D($event))" />
+    </div>
     <Settings :historyLen="g.getHistoryLength" :gameStatus="g.getGameStatus" @returnMove="g.returnMove()" @start="g.startGame()" @cancel="g.reset()" />
   </Main>
 </template>
@@ -10,6 +13,7 @@
   import Main from '@/layouts/Main.vue';
   import Board from '@/layouts/TicTacToe/Board.vue';
   import Settings from '@/layouts/TicTacToe/Settings.vue';
+  import Result from '@/layouts/TicTacToe/Result.vue';
   import Game from '@/models/tictactoe/game';
 
   export default defineComponent({
@@ -18,6 +22,7 @@
       Main,
       Board,
       Settings,
+      Result,
     },
     setup() {
       const g = new Game();
@@ -32,5 +37,10 @@
 <style lang="scss" scoped>
   .tic {
     @include Flex(row, center, center);
+
+    &__game {
+      @include Flex(column, center, center);
+      gap: 50px;
+    }
   }
 </style>

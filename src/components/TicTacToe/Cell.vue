@@ -1,5 +1,5 @@
 <template>
-  <button type="button" class="cell" @mouseover="isHovered = gameStatus === 'start'" @mouseleave="isHovered = false">
+  <button type="button" class="cell" :class="{ win: isWin }" @mouseover="isHovered = gameStatus === 'start'" @mouseleave="isHovered = false">
     <Transition name="fade">
       <div v-if="isShow('o')" class="cell__o" :class="{ hovered: defineHovered('o') }"></div>
     </Transition>
@@ -26,6 +26,10 @@
       },
       gameStatus: {
         type: String as PropType<GameStatus>,
+        required: true,
+      },
+      isWin: {
+        type: Boolean,
         required: true,
       },
     },
@@ -58,6 +62,11 @@
     border: none;
     outline: none;
     cursor: pointer;
+    transition-duration: 0.5s;
+
+    &.win {
+      background: lightgreen;
+    }
 
     &__o {
       width: 120px;
