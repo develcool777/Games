@@ -14,7 +14,7 @@ export interface Coordinates {
 }
 
 export interface Move extends Coordinates {
-  value: Player;
+  cell: Player;
 }
 
 export interface Computer {

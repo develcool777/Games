@@ -1,6 +1,6 @@
 <template>
   <section class="field">
-    <Cell v-for="(cell, i) in board.flat()" :cell="cell" :key="i" @click="makeMove(i)" />
+    <Cell v-for="(cell, i) in board.flat()" :gameStatus="gameStatus" :player="player" :cell="cell" :key="i" @click="makeMove(i)" />
     <div class="field__line v1"></div>
     <div class="field__line v2"></div>
     <div class="field__line horizontal h1"></div>
@@ -11,7 +11,7 @@
 <script lang="ts">
   import { defineComponent, type PropType } from 'vue';
   import Cell from '@/components/TicTacToe/Cell.vue';
-  import type { Board } from '@/types/models/tictactoe';
+  import type { Board, GameStatus, Player } from '@/types/models/tictactoe';
 
   export default defineComponent({
     name: 'Board',
@@ -23,11 +23,22 @@
         type: Object as PropType<Board>,
         required: true,
       },
+      gameStatus: {
+        type: String as PropType<GameStatus>,
+        required: true,
+      },
+      player: {
+        type: String as PropType<Player>,
+        required: true,
+      },
     },
     emits: ['makeMove'],
-    setup(_, context) {
+    setup(props, context) {
       // methods
-      const makeMove = (index: number) => context.emit('makeMove', index);
+      const makeMove = (index: number): void => {
+        if (props.gameStatus !== 'start') return;
+        context.emit('makeMove', index);
+      };
 
       return {
         makeMove,
@@ -42,8 +53,8 @@
     gap: 10px;
     position: relative;
     flex-wrap: wrap;
-    width: 640px;
-    height: 640px;
+    width: 490px;
+    height: 490px;
     border: 10px solid darkseagreen;
     border-radius: 5px;
 
@@ -59,19 +70,19 @@
       }
 
       &.v1 {
-        top: 200px;
+        top: 150px;
       }
 
       &.v2 {
-        top: calc(200px + 10px + 200px);
+        top: calc(150px + 10px + 150px);
       }
 
       &.h1 {
-        left: 200px;
+        left: 150px;
       }
 
       &.h2 {
-        left: calc(200px + 10px + 200px);
+        left: calc(150px + 10px + 150px);
       }
     }
   }

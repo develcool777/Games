@@ -6,7 +6,7 @@ export default class Game {
   private board: Ref<Board>;
   private boardSize: Ref<BoardSize>;
   private result: Ref<Result>;
-  private history: Move[];
+  private history: Ref<Move[]>;
   private computer: Ref<Computer>;
   private gameStatus: Ref<GameStatus>;
 
@@ -25,7 +25,7 @@ export default class Game {
     } as Computer);
     this.gameStatus = ref('');
     this.boardSize = ref(3);
-    this.history = [];
+    this.history = ref([]);
   }
 
   public get getPlayer(): Player {
@@ -46,6 +46,14 @@ export default class Game {
 
   public get getGameStatus(): GameStatus {
     return this.gameStatus.value;
+  }
+
+  public get getHistoryLength(): number {
+    return this.history.value.length;
+  }
+
+  private get amoutOfCells(): number {
+    return Math.pow(this.boardSize.value, 2);
   }
 
   private get getAvailableMoves(): Coordinates[] {
@@ -80,7 +88,7 @@ export default class Game {
 
   private makeMove = (coordinates: Coordinates): void => {
     this.board.value[coordinates.x][coordinates.y] = this.player.value;
-    this.history.push({ ...coordinates, value: this.player.value });
+    this.history.value.push({ ...coordinates, cell: this.player.value });
     this.player.value = this.player.value === 'x' ? 'o' : 'x';
     this.result.value = this.defineResult();
   };
@@ -108,26 +116,33 @@ export default class Game {
       ['', '', ''],
       ['', '', ''],
     ];
-    this.history = [];
+    this.gameStatus.value = '';
+    this.history.value = [];
   };
 
   public returnMove = (): void => {
     if (this.gameStatus.value !== 'start') throw Error('Game is not started');
-    if (this.history.length === 0) throw Error('History is empty');
+    if (this.getHistoryLength === 0) throw Error('History is empty');
 
-    this.history.pop();
+    this.removeMove();
 
-    if (this.computer.value.isComp && this.history.length !== 0) {
+    if (this.computer.value.isComp && this.getHistoryLength !== 0) {
       const compSide = this.computer.value.isFirst ? 'x' : 'o';
-      const isUserLastTurn = compSide !== this.history.at(-1)?.value;
-      isUserLastTurn && this.history.pop();
+      const isUserLastTurn = compSide !== this.history.value.at(-1)?.cell;
+      isUserLastTurn && this.removeMove();
     }
 
-    this.player.value = this.history.at(-1)?.value ?? 'x';
+    this.player.value = this.history.value.at(-1)?.cell ?? 'x';
+  };
+
+  private removeMove = (): void => {
+    const move = this.history.value.pop();
+    if (move === undefined) return;
+    this.board.value[move.x][move.y] = '';
   };
 
   private defineResult = (): Result => {
-    if (this.history.length < 5) return '';
+    if (this.getHistoryLength < 5) return '';
     const isWin = (a: Cell, b: Cell, c: Cell): boolean => a === b && b === c && a !== '';
     const b = this.board.value;
 
@@ -143,10 +158,10 @@ export default class Game {
 
     // diagonals
     if (isWin(b[0][0], b[1][1], b[2][2])) return b[1][1];
-    if (isWin(b[0][2], b[1][1], b[0][2])) return b[1][1];
+    if (isWin(b[0][2], b[1][1], b[2][0])) return b[1][1];
 
     // draw
-    if (this.history.length === this.board.value.length) return 'd';
+    if (this.getHistoryLength === this.amoutOfCells) return 'd';
 
     return '';
   };
@@ -158,6 +173,6 @@ export default class Game {
 
   public finishGame = (): void => {
     this.gameStatus.value = 'finish';
-    this.reset();
+    // this.reset();
   };
 }

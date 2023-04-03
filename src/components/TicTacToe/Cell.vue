@@ -1,17 +1,17 @@
 <template>
-  <div class="cell">
+  <button type="button" class="cell" @mouseover="isHovered = gameStatus === 'start'" @mouseleave="isHovered = false">
     <Transition name="fade">
-      <div v-if="cell === 'o'" class="cell__o"></div>
+      <div v-if="isShow('o')" class="cell__o" :class="{ hovered: defineHovered('o') }"></div>
     </Transition>
     <Transition name="fade">
-      <div v-if="cell === 'x'" class="cell__x"></div>
+      <div v-if="isShow('x')" class="cell__x" :class="{ hovered: defineHovered('x') }"></div>
     </Transition>
-  </div>
+  </button>
 </template>
 
 <script lang="ts">
-  import { defineComponent, type PropType } from 'vue';
-  import type { Cell } from '@/types/models/tictactoe';
+  import { defineComponent, ref, type PropType } from 'vue';
+  import type { Cell, Player, GameStatus } from '@/types/models/tictactoe';
 
   export default defineComponent({
     name: 'Cell',
@@ -20,9 +20,31 @@
         type: String as PropType<Cell>,
         required: true,
       },
+      player: {
+        type: String as PropType<Player>,
+        required: true,
+      },
+      gameStatus: {
+        type: String as PropType<GameStatus>,
+        required: true,
+      },
     },
-    setup() {
-      return {};
+    setup(props) {
+      const isHovered = ref<boolean>(false);
+
+      const isShow = (type: Player): boolean => {
+        return props.cell === type || defineHovered(type);
+      };
+
+      const defineHovered = (type: Player): boolean => {
+        return props.cell === '' && props.player === type && isHovered.value;
+      };
+
+      return {
+        isHovered,
+        isShow,
+        defineHovered,
+      };
     },
   });
 </script>
@@ -30,15 +52,23 @@
 <style lang="scss" scoped>
   .cell {
     @include Flex(row, center, center);
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     background: white;
+    border: none;
+    outline: none;
+    cursor: pointer;
 
     &__o {
       width: 120px;
       height: 120px;
       border-radius: 50%;
       border: 20px solid #5aa5d1;
+      transition-duration: 0.5s;
+
+      &.hovered {
+        border-color: lighten($color: #5aa5d1, $amount: 20);
+      }
     }
 
     &__x {
@@ -55,6 +85,12 @@
         height: 20px;
         width: 100%;
         background: #e4465b;
+        transition-duration: 0.5s;
+      }
+
+      &.hovered::before,
+      &.hovered::after {
+        background: lighten($color: #e4465b, $amount: 20);
       }
 
       &::before {
