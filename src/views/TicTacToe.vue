@@ -1,7 +1,7 @@
 <template>
   <Main class="tic">
     <div class="tic__game">
-      <Result :result="g.getResult" :player="g.getPlayer" />
+      <Panel :game-status="g.getGameStatus" :result="g.getResult" :player="g.getPlayer" />
       <Board :winCells="g.getWinCells" :player="g.getPlayer" :gameStatus="g.getGameStatus" :board="g.getBoard" @makeMove="g.userMove(g.index1DTo2D($event))" />
     </div>
     <Settings :historyLen="g.getHistoryLength" :gameStatus="g.getGameStatus" @returnMove="g.returnMove()" @start="g.startGame()" @cancel="g.reset()" />
@@ -13,7 +13,7 @@
   import Main from '@/layouts/Main.vue';
   import Board from '@/layouts/TicTacToe/Board.vue';
   import Settings from '@/layouts/TicTacToe/Settings.vue';
-  import Result from '@/layouts/TicTacToe/Result.vue';
+  import Panel from '@/layouts/TicTacToe/Panel.vue';
   import Game from '@/models/tictactoe/game';
 
   export default defineComponent({
@@ -22,7 +22,7 @@
       Main,
       Board,
       Settings,
-      Result,
+      Panel,
     },
     setup() {
       const g = new Game();
