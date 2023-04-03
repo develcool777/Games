@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue';
-import type { Player, Board, Cell, Result, Coordinates, Move, Row, Computer, Index, GameStatus, BoardSize } from '@/types/models/tictactoe';
+import type { Player, Board, Cell, Result, Coordinates, Move, Computer, Index, GameStatus, BoardSize } from '@/types/models/tictactoe';
 
 export default class Game {
   private player: Ref<Player>;
@@ -14,18 +14,14 @@ export default class Game {
   public constructor() {
     this.player = ref('x');
     this.result = ref('');
-    this.board = ref([
-      ['', '', ''],
-      ['', '', ''],
-      ['', '', ''],
-    ] as Board);
+    this.boardSize = ref(3);
+    this.board = ref(this.createBoard());
     this.computer = ref({
       isComp: false,
       isFirst: false,
       mode: 'easy',
     } as Computer);
     this.gameStatus = ref('');
-    this.boardSize = ref(3);
     this.history = ref([]);
     this.winCells = ref([]);
   }
@@ -126,9 +122,23 @@ export default class Game {
       ['', '', ''],
       ['', '', ''],
     ];
+    this.board.value = this.createBoard();
     this.gameStatus.value = '';
     this.history.value = [];
     this.winCells.value = [];
+  };
+
+  private createBoard = (): Board => {
+    const board = [] as Board;
+    for (let i = 0; i < this.boardSize.value; i++) {
+      const row = [] as Cell[];
+      for (let j = 0; j < this.boardSize.value; j++) {
+        row.push('');
+      }
+      board.push(row);
+    }
+
+    return board;
   };
 
   public returnMove = (): void => {
@@ -153,6 +163,17 @@ export default class Game {
   };
 
   private defineResult = (): Result => {
+    switch (this.boardSize.value) {
+      case 3:
+        return this.defineResult3x3();
+      case 5:
+        return this.defineResult5x5();
+      case 7:
+        return '';
+    }
+  };
+
+  private defineResult3x3 = (): Result => {
     if (this.getHistoryLength < 5) return '';
     const isWin = (a: Cell, b: Cell, c: Cell): boolean => a === b && b === c && a !== '';
     const defineWin = (type: 'row' | 'col' | 'd1' | 'd2', index?: number): void => {
@@ -174,29 +195,29 @@ export default class Game {
     const b = this.board.value;
 
     // rows
-    if (isWin(...b[0])) {
+    if (isWin(b[0][0], b[0][1], b[0][2])) {
       defineWin('row', 0);
       return b[0][0];
     }
-    if (isWin(...b[1])) {
+    if (isWin(b[1][0], b[1][1], b[1][2])) {
       defineWin('row', 1);
       return b[1][0];
     }
-    if (isWin(...b[2])) {
+    if (isWin(b[2][0], b[2][1], b[2][2])) {
       defineWin('row', 2);
       return b[2][0];
     }
 
     // cols
-    if (isWin(...(b.map(row => row[0]) as Row))) {
+    if (isWin(b[0][0], b[1][0], b[2][0])) {
       defineWin('col', 0);
       return b[0][0];
     }
-    if (isWin(...(b.map(row => row[1]) as Row))) {
+    if (isWin(b[0][1], b[1][1], b[2][1])) {
       defineWin('col', 1);
       return b[0][1];
     }
-    if (isWin(...(b.map(row => row[2]) as Row))) {
+    if (isWin(b[0][2], b[1][2], b[2][2])) {
       defineWin('col', 2);
       return b[0][2];
     }
@@ -215,6 +236,55 @@ export default class Game {
     if (this.getHistoryLength === this.amoutOfCells) return 'd';
 
     return '';
+  };
+
+  private defineResult5x5 = (): Result => {
+    if (this.getHistoryLength < 7) return '';
+    const isWin = (row: Cell[]): Cell => {
+      const filtered = row.reduce((acc, cell, i) => {
+        if (i !== 0 || acc.at(-1) !== cell || acc.at(-1) === '') acc = [];
+        else acc.push(cell);
+
+        return acc;
+      }, [] as Cell[]);
+
+      return filtered.length === 4 ? filtered[0] : '';
+    };
+
+    const b = this.board.value;
+    let result: Result = '';
+
+    // rows
+    for (let i = 0; i < this.boardSize.value; i++) {
+      result = isWin(b[i]);
+      if (result !== '') return result;
+    }
+
+    // cols
+    for (let i = 0; i < this.boardSize.value; i++) {
+      result = isWin(b.map(row => row[i]));
+      if (result !== '') return result;
+    }
+
+    const diagonals = [
+      // left
+      [b[0][0], b[1][1], b[2][2], b[3][3], b[4][4]],
+      [b[1][0], b[2][1], b[3][2], b[4][3]],
+      [b[0][1], b[1][2], b[2][3], b[3][4]],
+      // right
+      [b[0][4], b[1][3], b[2][2], b[3][1], b[4][0]],
+      [b[0][3], b[1][2], b[2][1], b[3][0]],
+      [b[1][4], b[2][3], b[3][2], b[4][1]],
+    ];
+    for (let i = 0; i < diagonals.length; i++) {
+      result = isWin(diagonals[i]);
+      if (result !== '') return result;
+    }
+
+    // draw
+    if (this.getHistoryLength === this.amoutOfCells) return 'd';
+
+    return result;
   };
 
   public startGame = (): void => {

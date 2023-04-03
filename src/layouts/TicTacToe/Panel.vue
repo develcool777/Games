@@ -37,29 +37,29 @@
       // methods
       const specifyResult = (): string => {
         switch (props.result) {
-          case 'x': 
+          case 'x':
             return 'Winner X';
           case 'o':
             return 'Winner O';
           case 'd':
             return 'Draw';
-          case '': 
-            return ''
+          case '':
+            return '';
         }
-      }
+      };
 
       const defineClass = (type: 'x' | 'o'): string => {
         if (props.gameStatus === '') return '';
         if (props.gameStatus === 'start') return props.player === type ? 'active' : '';
-        
+
         if (props.result === type) return 'win';
         else if (props.result === 'd') return 'draw';
         else return 'lose';
-      }
+      };
 
       return {
         specifyResult,
-        defineClass
+        defineClass,
       };
     },
   });
@@ -80,7 +80,7 @@
       width: 120px;
       height: 100%;
       background: darkslategray;
-      transition-duration: .5s;
+      transition-duration: 0.5s;
 
       &.active {
         background: cadetblue;

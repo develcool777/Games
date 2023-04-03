@@ -1,7 +1,6 @@
 export type Player = 'x' | 'o';
 export type Cell = Player | '';
-export type Row = [Cell, Cell, Cell];
-export type Board = [Row, Row, Row];
+export type Board = Cell[][];
 export type Result = Cell | 'd';
 export type Mode = 'easy' | 'hard';
 export type Index = 0 | 1 | 2;
