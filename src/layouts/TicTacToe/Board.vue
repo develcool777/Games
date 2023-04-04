@@ -1,5 +1,5 @@
 <template>
-  <section class="field">
+  <section class="field" :style="defineFieldStyle()">
     <Cell
       v-for="(cell, i) in board.flat()"
       :gameStatus="gameStatus"
@@ -7,18 +7,18 @@
       :isWin="winCells.includes(i)"
       :cell="cell"
       :key="i"
-      @click="makeMove(i)" />
-    <div class="field__line v1"></div>
-    <div class="field__line v2"></div>
-    <div class="field__line horizontal h1"></div>
-    <div class="field__line horizontal h2"></div>
+      :style="defineCellStyle()"
+      @click="makeMove(i, cell)" />
+    <div class="field__line" v-for="(n, i) in board.length - 1" :key="n" :style="defineVerticalStyle(i)"></div>
+    <div class="field__line horizontal" v-for="(n, i) in board.length - 1" :key="n" :style="defineVerticalStyle(i, true)"></div>
   </section>
 </template>
 
 <script lang="ts">
-  import { defineComponent, type PropType } from 'vue';
+  import { defineComponent, type PropType, type StyleValue } from 'vue';
   import Cell from '@/components/TicTacToe/Cell.vue';
   import type { Board, GameStatus, Player } from '@/types/models/tictactoe';
+  import type { Cell as CellInterface } from '@/types/models/tictactoe';
 
   export default defineComponent({
     name: 'Board',
@@ -46,13 +46,31 @@
     emits: ['makeMove'],
     setup(props, context) {
       // methods
-      const makeMove = (index: number): void => {
-        if (props.gameStatus !== 'start') return;
+      const makeMove = (index: number, cell: CellInterface): void => {
+        if (props.gameStatus !== 'start' || cell !== '') return;
         context.emit('makeMove', index);
+      };
+
+      const defineCellStyle = (): StyleValue => {
+        const size = props.board.length === 3 ? '150px' : '100px';
+        return { width: size, height: size };
+      };
+
+      const defineFieldStyle = (): StyleValue => {
+        const size = props.board.length === 3 ? '490px' : '560px';
+        return { width: size, height: size };
+      };
+
+      const defineVerticalStyle = (index: number, isHorizontal?: boolean): StyleValue => {
+        const cellSize = props.board.length === 3 ? 150 : 100;
+        return isHorizontal ? { top: `${cellSize + index * (cellSize + 10)}px` } : { left: `${cellSize + index * (cellSize + 10)}px` };
       };
 
       return {
         makeMove,
+        defineCellStyle,
+        defineFieldStyle,
+        defineVerticalStyle,
       };
     },
   });
@@ -64,36 +82,18 @@
     gap: 10px;
     position: relative;
     flex-wrap: wrap;
-    width: 490px;
-    height: 490px;
     border: 10px solid darkseagreen;
     border-radius: 5px;
 
     &__line {
       position: absolute;
-      width: 100%;
-      height: 10px;
+      width: 10px;
+      height: 100%;
       background: darkseagreen;
 
       &.horizontal {
-        width: 10px;
-        height: 100%;
-      }
-
-      &.v1 {
-        top: 150px;
-      }
-
-      &.v2 {
-        top: calc(150px + 10px + 150px);
-      }
-
-      &.h1 {
-        left: 150px;
-      }
-
-      &.h2 {
-        left: calc(150px + 10px + 150px);
+        width: 100%;
+        height: 10px;
       }
     }
   }

@@ -25,7 +25,7 @@
       Panel,
     },
     setup() {
-      const g = new Game();
+      const g = new Game(5);
 
       return {
         g,

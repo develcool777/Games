@@ -1,11 +1,7 @@
 <template>
   <button type="button" class="cell" title="cell" :class="{ win: isWin }" @mouseover="isHovered = gameStatus === 'start'" @mouseleave="isHovered = false">
-    <Transition name="fade">
-      <div v-if="isShow('o')" class="cell__o" :class="{ hovered: defineHovered('o') }"></div>
-    </Transition>
-    <Transition name="fade">
-      <div v-if="isShow('x')" class="cell__x" :class="{ hovered: defineHovered('x') }"></div>
-    </Transition>
+    <div v-if="isShow('o')" class="cell__o" :class="{ hovered: defineHovered('o') }"></div>
+    <div v-if="isShow('x')" class="cell__x" :class="{ hovered: defineHovered('x') }"></div>
   </button>
 </template>
 
@@ -69,8 +65,8 @@
     }
 
     &__o {
-      width: 120px;
-      height: 120px;
+      width: 80%;
+      height: 80%;
       border-radius: 50%;
       border: 20px solid #5aa5d1;
       transition-duration: 0.5s;
@@ -82,8 +78,8 @@
 
     &__x {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 80%;
+      height: 80%;
 
       &::before,
       &::after {

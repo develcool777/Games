@@ -3,7 +3,7 @@ export type Cell = Player | '';
 export type Board = Cell[][];
 export type Result = Cell | 'd';
 export type Mode = 'easy' | 'hard';
-export type Index = 0 | 1 | 2;
+export type Index = 0 | 1 | 2 | 3 | 4;
 export type GameStatus = '' | 'start' | 'finish';
 export type BoardSize = 3 | 5 | 7;
 

@@ -11,10 +11,12 @@ export default class Game {
   private gameStatus: Ref<GameStatus>;
   private winCells: Ref<Coordinates[]>;
 
-  public constructor() {
+  public constructor(boardSize: BoardSize = 3) {
+    if (![3, 5, 7].includes(boardSize)) throw Error('Wrong size for boardSize, expected: 3, 5, 7');
+
     this.player = ref('x');
     this.result = ref('');
-    this.boardSize = ref(3);
+    this.boardSize = ref(boardSize);
     this.board = ref(this.createBoard());
     this.computer = ref({
       isComp: false,
@@ -96,7 +98,7 @@ export default class Game {
     this.board.value[coordinates.x][coordinates.y] = this.player.value;
     this.history.value.push({ ...coordinates, cell: this.player.value });
     this.player.value = this.player.value === 'x' ? 'o' : 'x';
-    this.result.value = this.defineResult();
+    this.defineResult();
   };
 
   private compMove = (): void => {
@@ -162,129 +164,68 @@ export default class Game {
     this.board.value[move.x][move.y] = '';
   };
 
-  private defineResult = (): Result => {
-    switch (this.boardSize.value) {
-      case 3:
-        return this.defineResult3x3();
-      case 5:
-        return this.defineResult5x5();
-      case 7:
-        return '';
-    }
-  };
+  private defineResult = (): void => {
+    const avoidChecking = this.boardSize.value === 3 ? 5 : 7;
+    if (this.getHistoryLength < avoidChecking) return;
 
-  private defineResult3x3 = (): Result => {
-    if (this.getHistoryLength < 5) return '';
-    const isWin = (a: Cell, b: Cell, c: Cell): boolean => a === b && b === c && a !== '';
-    const defineWin = (type: 'row' | 'col' | 'd1' | 'd2', index?: number): void => {
-      this.winCells.value.push(
-        ...(b.map((_, i) => {
-          switch (type) {
-            case 'row':
-              return { x: index, y: i };
-            case 'col':
-              return { x: i, y: index };
-            case 'd1':
-              return { x: i, y: i };
-            case 'd2':
-              return { x: i, y: 2 - i };
-          }
-        }) as Coordinates[])
-      );
-    };
-    const b = this.board.value;
+    const isWin = (row: Cell[], rowCoordinates: Coordinates[]): boolean => {
+      if (row.length !== rowCoordinates.length) throw Error('row and rowCoordinates do not have same length');
 
-    // rows
-    if (isWin(b[0][0], b[0][1], b[0][2])) {
-      defineWin('row', 0);
-      return b[0][0];
-    }
-    if (isWin(b[1][0], b[1][1], b[1][2])) {
-      defineWin('row', 1);
-      return b[1][0];
-    }
-    if (isWin(b[2][0], b[2][1], b[2][2])) {
-      defineWin('row', 2);
-      return b[2][0];
-    }
+      let winCells: Coordinates[] = [];
+      const amountOfWinCells = this.boardSize.value === 3 ? 3 : 4;
 
-    // cols
-    if (isWin(b[0][0], b[1][0], b[2][0])) {
-      defineWin('col', 0);
-      return b[0][0];
-    }
-    if (isWin(b[0][1], b[1][1], b[2][1])) {
-      defineWin('col', 1);
-      return b[0][1];
-    }
-    if (isWin(b[0][2], b[1][2], b[2][2])) {
-      defineWin('col', 2);
-      return b[0][2];
-    }
-
-    // diagonals
-    if (isWin(b[0][0], b[1][1], b[2][2])) {
-      defineWin('d1');
-      return b[1][1];
-    }
-    if (isWin(b[0][2], b[1][1], b[2][0])) {
-      defineWin('d2');
-      return b[1][1];
-    }
-
-    // draw
-    if (this.getHistoryLength === this.amoutOfCells) return 'd';
-
-    return '';
-  };
-
-  private defineResult5x5 = (): Result => {
-    if (this.getHistoryLength < 7) return '';
-    const isWin = (row: Cell[]): Cell => {
-      const filtered = row.reduce((acc, cell, i) => {
-        if (i !== 0 || acc.at(-1) !== cell || acc.at(-1) === '') acc = [];
-        else acc.push(cell);
+      const winRow = row.reduce((acc, cell, i) => {
+        if (acc.length === amountOfWinCells) return acc;
+        if (cell === '' || (acc.length !== 0 && acc.at(-1) !== cell)) {
+          acc = [];
+          winCells = [];
+        }
+        acc.push(cell);
+        winCells.push(rowCoordinates[i]);
 
         return acc;
       }, [] as Cell[]);
 
-      return filtered.length === 4 ? filtered[0] : '';
+      const isWon = winRow.length === amountOfWinCells;
+      if (isWon) {
+        this.result.value = winRow[0];
+        this.winCells.value = winCells;
+      }
+
+      return isWon;
     };
 
     const b = this.board.value;
-    let result: Result = '';
 
     // rows
     for (let i = 0; i < this.boardSize.value; i++) {
-      result = isWin(b[i]);
-      if (result !== '') return result;
+      const coordinates = b.map((_, j) => ({ x: i, y: j } as Coordinates));
+      if (isWin(b[i], coordinates)) return;
     }
 
     // cols
     for (let i = 0; i < this.boardSize.value; i++) {
-      result = isWin(b.map(row => row[i]));
-      if (result !== '') return result;
+      const column = b.map(row => row[i]);
+      const coordinates = b.map((_, j) => ({ x: j, y: i } as Coordinates));
+      if (isWin(column, coordinates)) return;
     }
 
-    const diagonals = [
-      // left
-      [b[0][0], b[1][1], b[2][2], b[3][3], b[4][4]],
-      [b[1][0], b[2][1], b[3][2], b[4][3]],
-      [b[0][1], b[1][2], b[2][3], b[3][4]],
-      // right
-      [b[0][4], b[1][3], b[2][2], b[3][1], b[4][0]],
-      [b[0][3], b[1][2], b[2][1], b[3][0]],
-      [b[1][4], b[2][3], b[3][2], b[4][1]],
-    ];
-    for (let i = 0; i < diagonals.length; i++) {
-      result = isWin(diagonals[i]);
-      if (result !== '') return result;
-    }
+    // const diagonals = [
+    //   // left
+    //   [b[0][0], b[1][1], b[2][2], b[3][3], b[4][4]],
+    //   [b[1][0], b[2][1], b[3][2], b[4][3]],
+    //   [b[0][1], b[1][2], b[2][3], b[3][4]],
+    //   // right
+    //   [b[0][4], b[1][3], b[2][2], b[3][1], b[4][0]],
+    //   [b[0][3], b[1][2], b[2][1], b[3][0]],
+    //   [b[1][4], b[2][3], b[3][2], b[4][1]],
+    // ];
+    // for (let i = 0; i < diagonals.length; i++) {
+    //   result = isWin(diagonals[i]);
+    //   if (result !== '') return result;
+    // }
 
-    // draw
-    if (this.getHistoryLength === this.amoutOfCells) return 'd';
-
-    return result;
+    this.result.value = this.getHistoryLength === this.amoutOfCells ? 'd' : '';
   };
 
   public startGame = (): void => {
