@@ -73,6 +73,68 @@ export default class Game {
     }, [] as Coordinates[]);
   }
 
+  private get getDiagonals(): [Cell[][], Coordinates[][]] {
+    const amountOfWinCells = this.boardSize.value === 3 ? 3 : 4;
+    const coords: Coordinates[][] = [];
+    const rows: Cell[][] = [];
+    let diagonal: Coordinates[] = [];
+    let row: Cell[] = [];
+
+    const pushOnly = (x: number, y: number): void => {
+      diagonal.push({ x, y } as Coordinates);
+      row.push(this.board.value[x][y]);
+    };
+
+    const pushAndReset = (): void => {
+      if (diagonal.length >= amountOfWinCells) {
+        coords.push(diagonal);
+        rows.push(row);
+      }
+      diagonal = [];
+      row = [];
+    };
+
+    // diagonals from top-left to botom-right
+    for (let i = 0; i < this.boardSize.value; i++) {
+      // diagonals from top-left to bottom-right, towards bottom-left corner
+      for (let j = 0; j < this.boardSize.value; j++) {
+        const x = i + j;
+        if (x >= this.boardSize.value) break;
+        pushOnly(x, j);
+      }
+      pushAndReset();
+
+      // diagonals from top-right to bottom-left, towards bottom-right corner
+      for (let j = this.boardSize.value - 1; j >= 0; j--) {
+        const x = this.boardSize.value - 1 + i - j;
+        if (x >= this.boardSize.value) break;
+        pushOnly(x, j);
+      }
+      pushAndReset();
+
+      // skip one step to avoid dublicate of main diagonals
+      if (i === 0) continue;
+
+      // diagonals from top-left to bottom-right, towards top-right corner
+      for (let j = 0; j < this.boardSize.value; j++) {
+        const x = j - i;
+        if (x < 0) continue;
+        pushOnly(x, j);
+      }
+      pushAndReset();
+
+      // diagonals from top-right to bottom-left, towards top-left corner
+      for (let j = this.boardSize.value - 1; j >= 0; j--) {
+        const x = this.boardSize.value - 1 - i - j;
+        if (x < 0) continue;
+        pushOnly(x, j);
+      }
+      pushAndReset();
+    }
+
+    return [rows, coords];
+  }
+
   public index1DTo2D = (index: number): Coordinates => {
     return {
       x: Math.floor(index / this.boardSize.value) as Index,
@@ -164,66 +226,56 @@ export default class Game {
     this.board.value[move.x][move.y] = '';
   };
 
+  private isWin = (row: Cell[], rowCoordinates: Coordinates[]): boolean => {
+    if (row.length !== rowCoordinates.length) throw Error('row and rowCoordinates do not have same length');
+
+    let winCells: Coordinates[] = [];
+    const amountOfWinCells = this.boardSize.value === 3 ? 3 : 4;
+
+    const winRow = row.reduce((acc, cell, i) => {
+      if (acc.length === amountOfWinCells) return acc;
+      if (cell === '' || (acc.length !== 0 && acc.at(-1) !== cell)) {
+        acc = [];
+        winCells = [];
+      }
+      acc.push(cell);
+      winCells.push(rowCoordinates[i]);
+
+      return acc;
+    }, [] as Cell[]);
+
+    const isWon = winRow.length === amountOfWinCells;
+    if (isWon) {
+      this.result.value = winRow[0];
+      this.winCells.value = winCells;
+    }
+
+    return isWon;
+  };
+
   private defineResult = (): void => {
     const avoidChecking = this.boardSize.value === 3 ? 5 : 7;
     if (this.getHistoryLength < avoidChecking) return;
-
-    const isWin = (row: Cell[], rowCoordinates: Coordinates[]): boolean => {
-      if (row.length !== rowCoordinates.length) throw Error('row and rowCoordinates do not have same length');
-
-      let winCells: Coordinates[] = [];
-      const amountOfWinCells = this.boardSize.value === 3 ? 3 : 4;
-
-      const winRow = row.reduce((acc, cell, i) => {
-        if (acc.length === amountOfWinCells) return acc;
-        if (cell === '' || (acc.length !== 0 && acc.at(-1) !== cell)) {
-          acc = [];
-          winCells = [];
-        }
-        acc.push(cell);
-        winCells.push(rowCoordinates[i]);
-
-        return acc;
-      }, [] as Cell[]);
-
-      const isWon = winRow.length === amountOfWinCells;
-      if (isWon) {
-        this.result.value = winRow[0];
-        this.winCells.value = winCells;
-      }
-
-      return isWon;
-    };
-
     const b = this.board.value;
 
     // rows
     for (let i = 0; i < this.boardSize.value; i++) {
       const coordinates = b.map((_, j) => ({ x: i, y: j } as Coordinates));
-      if (isWin(b[i], coordinates)) return;
+      if (this.isWin(b[i], coordinates)) return;
     }
 
     // cols
     for (let i = 0; i < this.boardSize.value; i++) {
       const column = b.map(row => row[i]);
       const coordinates = b.map((_, j) => ({ x: j, y: i } as Coordinates));
-      if (isWin(column, coordinates)) return;
+      if (this.isWin(column, coordinates)) return;
     }
 
-    // const diagonals = [
-    //   // left
-    //   [b[0][0], b[1][1], b[2][2], b[3][3], b[4][4]],
-    //   [b[1][0], b[2][1], b[3][2], b[4][3]],
-    //   [b[0][1], b[1][2], b[2][3], b[3][4]],
-    //   // right
-    //   [b[0][4], b[1][3], b[2][2], b[3][1], b[4][0]],
-    //   [b[0][3], b[1][2], b[2][1], b[3][0]],
-    //   [b[1][4], b[2][3], b[3][2], b[4][1]],
-    // ];
-    // for (let i = 0; i < diagonals.length; i++) {
-    //   result = isWin(diagonals[i]);
-    //   if (result !== '') return result;
-    // }
+    // diagonals
+    const diagonals = this.getDiagonals;
+    for (let i = 0; i < diagonals[0].length; i++) {
+      if (this.isWin(diagonals[0][i], diagonals[1][i])) return;
+    }
 
     this.result.value = this.getHistoryLength === this.amoutOfCells ? 'd' : '';
   };

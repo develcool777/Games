@@ -52,17 +52,17 @@
       };
 
       const defineCellStyle = (): StyleValue => {
-        const size = props.board.length === 3 ? '150px' : '100px';
+        const size = props.board.length === 3 ? '150px' : props.board.length === 5 ? '100px' : '80px';
         return { width: size, height: size };
       };
 
       const defineFieldStyle = (): StyleValue => {
-        const size = props.board.length === 3 ? '490px' : '560px';
+        const size = props.board.length === 3 ? '490px' : props.board.length === 5 ? '560px' : '640px';
         return { width: size, height: size };
       };
 
       const defineVerticalStyle = (index: number, isHorizontal?: boolean): StyleValue => {
-        const cellSize = props.board.length === 3 ? 150 : 100;
+        const cellSize = props.board.length === 3 ? 150 : props.board.length === 5 ? 100 : 80;
         return isHorizontal ? { top: `${cellSize + index * (cellSize + 10)}px` } : { left: `${cellSize + index * (cellSize + 10)}px` };
       };
 
