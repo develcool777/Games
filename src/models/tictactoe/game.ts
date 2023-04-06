@@ -210,20 +210,21 @@ export default class Game {
     if (this.getHistoryLength === 0) throw Error('History is empty');
 
     this.removeMove();
+    if (!this.computer.value.isComp || this.getHistoryLength === 0) return;
 
-    if (this.computer.value.isComp && this.getHistoryLength !== 0) {
-      const compSide = this.computer.value.isFirst ? 'x' : 'o';
-      const isUserLastTurn = compSide !== this.history.value.at(-1)?.cell;
-      isUserLastTurn && this.removeMove();
-    }
-
-    this.player.value = this.history.value.at(-1)?.cell ?? 'x';
+    const compSide = this.computer.value.isFirst ? 'x' : 'o';
+    const isUserLastTurn = compSide !== this.history.value.at(-1)?.cell;
+    isUserLastTurn && this.removeMove();
   };
 
   private removeMove = (): void => {
     const move = this.history.value.pop();
-    if (move === undefined) return;
+    if (move === undefined) {
+      this.player.value = 'x';
+      return;
+    }
     this.board.value[move.x][move.y] = '';
+    this.player.value = move.cell;
   };
 
   private isWin = (row: Cell[], rowCoordinates: Coordinates[]): boolean => {
@@ -247,7 +248,7 @@ export default class Game {
     const isWon = winRow.length === amountOfWinCells;
     if (isWon) {
       this.result.value = winRow[0];
-      this.winCells.value = winCells;
+      this.winCells.value.push(...winCells);
     }
 
     return isWon;
@@ -261,22 +262,21 @@ export default class Game {
     // rows
     for (let i = 0; i < this.boardSize.value; i++) {
       const coordinates = b.map((_, j) => ({ x: i, y: j } as Coordinates));
-      if (this.isWin(b[i], coordinates)) return;
+      this.isWin(b[i], coordinates);
     }
 
     // cols
     for (let i = 0; i < this.boardSize.value; i++) {
       const column = b.map(row => row[i]);
       const coordinates = b.map((_, j) => ({ x: j, y: i } as Coordinates));
-      if (this.isWin(column, coordinates)) return;
+      this.isWin(column, coordinates);
     }
 
     // diagonals
     const diagonals = this.getDiagonals;
-    for (let i = 0; i < diagonals[0].length; i++) {
-      if (this.isWin(diagonals[0][i], diagonals[1][i])) return;
-    }
+    for (let i = 0; i < diagonals[0].length; i++) this.isWin(diagonals[0][i], diagonals[1][i]);
 
+    if (this.result.value !== '') return;
     this.result.value = this.getHistoryLength === this.amoutOfCells ? 'd' : '';
   };
 
