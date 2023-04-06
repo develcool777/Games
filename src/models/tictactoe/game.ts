@@ -288,4 +288,9 @@ export default class Game {
   public finishGame = (): void => {
     this.gameStatus.value = 'finish';
   };
+
+  public setBoardSize = (size: BoardSize): void => {
+    this.boardSize.value = size;
+    this.reset();
+  };
 }

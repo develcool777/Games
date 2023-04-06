@@ -4,7 +4,15 @@
       <Panel :game-status="g.getGameStatus" :result="g.getResult" :player="g.getPlayer" />
       <Board :winCells="g.getWinCells" :player="g.getPlayer" :gameStatus="g.getGameStatus" :board="g.getBoard" @makeMove="g.userMove(g.index1DTo2D($event))" />
     </div>
-    <Settings :historyLen="g.getHistoryLength" :gameStatus="g.getGameStatus" @returnMove="g.returnMove()" @start="g.startGame()" @cancel="g.reset()" />
+    <Settings
+      class="tic__setting"
+      :historyLen="g.getHistoryLength"
+      :gameStatus="g.getGameStatus"
+      :boardSize="g.getBoardSize"
+      @returnMove="g.returnMove()"
+      @start="g.startGame()"
+      @cancel="g.reset()"
+      @setSize="g.setBoardSize($event)" />
   </Main>
 </template>
 
@@ -25,7 +33,7 @@
       Panel,
     },
     setup() {
-      const g = new Game(7);
+      const g = new Game();
 
       return {
         g,
@@ -37,10 +45,16 @@
 <style lang="scss" scoped>
   .tic {
     @include Flex(row, center, center);
+    padding: 0 10px;
 
     &__game {
       @include Flex(column, center, center);
+      flex: 1;
       gap: 50px;
+    }
+
+    &__setting {
+      flex-basis: 300px;
     }
   }
 </style>

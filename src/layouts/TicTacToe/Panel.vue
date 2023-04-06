@@ -144,6 +144,7 @@
     &__vs {
       font-weight: 600;
       font-size: 30px;
+      color: ghostwhite;
     }
 
     &__result {

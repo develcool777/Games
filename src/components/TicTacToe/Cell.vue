@@ -58,7 +58,6 @@
     border: none;
     outline: none;
     cursor: pointer;
-    transition-duration: 0.5s;
 
     &.win {
       background: lightgreen;
