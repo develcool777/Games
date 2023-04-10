@@ -143,7 +143,6 @@ export default class AI {
     this.getAvailableMoves.forEach(move => {
       this.board[move.x][move.y] = this.aiSide;
       const score = this.minMax(0, false);
-      console.log(score);
 
       // Undo the move
       this.board[move.x][move.y] = '';

@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent } from 'vue';
+  import { defineComponent, onBeforeUnmount } from 'vue';
   import Main from '@/layouts/Main.vue';
   import Board from '@/layouts/TicTacToe/Board.vue';
   import Settings from '@/layouts/TicTacToe/Settings.vue';
@@ -34,6 +34,9 @@
     },
     setup() {
       const g = new Game();
+
+      // onUnMounted
+      onBeforeUnmount(() => g.terminateWorker());
 
       return {
         g,

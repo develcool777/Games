@@ -1,6 +1,5 @@
 import { ref, type Ref } from 'vue';
-import type { Player, Board, Cell, Result, Coordinates, Move, Computer, Index, GameStatus, BoardSize, Config } from '@/types/models/tictactoe';
-import AI from '@/models/tictactoe/ai';
+import type { Player, Board, Cell, Result, Coordinates, Move, Computer, Index, GameStatus, BoardSize, Config, WorkerPayload } from '@/types/models/tictactoe';
 
 export default class Game {
   private player: Ref<Player>;
@@ -11,6 +10,7 @@ export default class Game {
   private computer: Ref<Computer>;
   private gameStatus: Ref<GameStatus>;
   private winCells: Ref<Coordinates[]>;
+  private worker: Worker | null = null;
 
   public constructor(boardSize: BoardSize = 3) {
     if (![3, 5, 7].includes(boardSize)) throw Error('Wrong size for boardSize, expected: 3, 5, 7');
@@ -155,11 +155,20 @@ export default class Game {
 
   private compMove = (): void => {
     if (this.result.value !== '') return;
+    if (this.worker === null) this.worker = new Worker(new URL('../../workers/tictactoe.ts', import.meta.url), { type: 'module' });
 
-    const ai = new AI(this.board.value, this.player.value);
-    const move = ai.makeMove(this.computer.value.level);
-    if (move === null) throw Error('AI move is null');
-    this.makeMove(move);
+    const obj: WorkerPayload = {
+      board: this.board.value,
+      player: this.player.value,
+      level: this.computer.value.level,
+    };
+
+    this.worker.postMessage(JSON.stringify(obj));
+    this.worker.onmessage = (event: MessageEvent): void => {
+      const move = event.data as Move | null;
+      if (move === null) throw Error('AI move is null');
+      this.makeMove(move);
+    };
   };
 
   private makeMove = (coordinates: Coordinates): void => {
@@ -287,5 +296,11 @@ export default class Game {
     if (config.side) this.computer.value.isFirst = config.side === 'o';
 
     this.reset();
+  };
+
+  public terminateWorker = (): void => {
+    if (this.worker === null) return;
+    this.worker.terminate();
+    this.worker = null;
   };
 }

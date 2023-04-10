@@ -35,3 +35,9 @@ export interface Score {
   o: number;
   d: number;
 }
+
+export interface WorkerPayload {
+  board: Board;
+  player: Player;
+  level: Level;
+}
