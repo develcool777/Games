@@ -1,5 +1,6 @@
 import { ref, type Ref } from 'vue';
-import type { Player, Board, Cell, Result, Coordinates, Move, Computer, Index, GameStatus, BoardSize } from '@/types/models/tictactoe';
+import type { Player, Board, Cell, Result, Coordinates, Move, Computer, Index, GameStatus, BoardSize, Config } from '@/types/models/tictactoe';
+import AI from '@/models/tictactoe/ai';
 
 export default class Game {
   private player: Ref<Player>;
@@ -21,7 +22,7 @@ export default class Game {
     this.computer = ref({
       isComp: false,
       isFirst: false,
-      mode: 'easy',
+      level: 'easy',
     } as Computer);
     this.gameStatus = ref('');
     this.history = ref([]);
@@ -56,21 +57,17 @@ export default class Game {
     return this.winCells.value.map(cell => this.index2Dto1D(cell));
   }
 
-  private get amoutOfCells(): number {
-    return Math.pow(this.boardSize.value, 2);
+  public get getConfig(): Config {
+    return {
+      boardSize: this.boardSize.value,
+      opponent: this.computer.value.isComp ? 'comp' : 'user',
+      side: this.computer.value.isFirst ? 'o' : 'x',
+      difficulty: this.computer.value.level,
+    };
   }
 
-  private get getAvailableMoves(): Coordinates[] {
-    return this.board.value.reduce((acc, row, i) => {
-      row.forEach((cell, j) => {
-        if (cell !== '') return;
-        acc.push({
-          x: i as Index,
-          y: j as Index,
-        });
-      });
-      return acc;
-    }, [] as Coordinates[]);
+  private get amoutOfCells(): number {
+    return Math.pow(this.boardSize.value, 2);
   }
 
   private get getDiagonals(): [Cell[][], Coordinates[][]] {
@@ -146,7 +143,7 @@ export default class Game {
     return coordinates.x * this.boardSize.value + coordinates.y;
   };
 
-  public userMove = (coordinates: Coordinates) => {
+  public userMove = (coordinates: Coordinates): void => {
     if (this.gameStatus.value !== 'start') throw Error('Game is not started');
     if (this.board.value[coordinates.x][coordinates.y] === undefined) throw Error('Wrong coordinates');
     if (this.board.value[coordinates.x][coordinates.y] !== '') throw Error('Cell is not empty');
@@ -156,26 +153,20 @@ export default class Game {
     if (this.result.value !== '') this.finishGame();
   };
 
+  private compMove = (): void => {
+    if (this.result.value !== '') return;
+
+    const ai = new AI(this.board.value, this.player.value);
+    const move = ai.makeMove(this.computer.value.level);
+    if (move === null) throw Error('AI move is null');
+    this.makeMove(move);
+  };
+
   private makeMove = (coordinates: Coordinates): void => {
     this.board.value[coordinates.x][coordinates.y] = this.player.value;
     this.history.value.push({ ...coordinates, cell: this.player.value });
     this.player.value = this.player.value === 'x' ? 'o' : 'x';
     this.defineResult();
-  };
-
-  private compMove = (): void => {
-    if (this.result.value !== '') return;
-    const aMoves = this.getAvailableMoves;
-
-    switch (this.computer.value.mode) {
-      case 'easy': {
-        return this.makeMove(aMoves[Math.floor(Math.random() * aMoves.length)]);
-      }
-      case 'hard': {
-        // for now
-        return this.makeMove(aMoves[Math.floor(Math.random() * aMoves.length)]);
-      }
-    }
   };
 
   public reset = (): void => {
@@ -289,8 +280,12 @@ export default class Game {
     this.gameStatus.value = 'finish';
   };
 
-  public setBoardSize = (size: BoardSize): void => {
-    this.boardSize.value = size;
+  public defineConfig = (config: Config): void => {
+    if (config.boardSize) this.boardSize.value = config.boardSize;
+    if (config.difficulty) this.computer.value.level = config.difficulty;
+    if (config.opponent) this.computer.value.isComp = config.opponent === 'comp';
+    if (config.side) this.computer.value.isFirst = config.side === 'o';
+
     this.reset();
   };
 }

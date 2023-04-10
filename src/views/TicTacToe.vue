@@ -8,11 +8,11 @@
       class="tic__setting"
       :historyLen="g.getHistoryLength"
       :gameStatus="g.getGameStatus"
-      :boardSize="g.getBoardSize"
+      :config="g.getConfig"
       @returnMove="g.returnMove()"
       @start="g.startGame()"
-      @cancel="g.reset()"
-      @setSize="g.setBoardSize($event)" />
+      @setConfig="g.defineConfig($event)"
+      @cancel="g.reset()" />
   </Main>
 </template>
 

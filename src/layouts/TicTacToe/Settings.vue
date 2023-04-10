@@ -14,9 +14,30 @@
     <div class="set__mode">
       <h4 class="set__modeName">Board Size</h4>
       <div class="set__variants">
-        <button type="button" class="set__variant" :class="{ active: boardSize === 3 }" @click="setSize(3)">3x3</button>
-        <button type="button" class="set__variant" :class="{ active: boardSize === 5 }" @click="setSize(5)">5x5</button>
-        <button type="button" class="set__variant" :class="{ active: boardSize === 7 }" @click="setSize(7)">7x7</button>
+        <button type="button" class="set__variant" :class="{ active: config?.boardSize === 3 }" @click="setSize(3)">3x3</button>
+        <button type="button" class="set__variant" :class="{ active: config?.boardSize === 5 }" @click="setSize(5)">5x5</button>
+        <button type="button" class="set__variant" :class="{ active: config?.boardSize === 7 }" @click="setSize(7)">7x7</button>
+      </div>
+    </div>
+    <div class="set__mode">
+      <h4 class="set__modeName">Opponent</h4>
+      <div class="set__variants">
+        <button type="button" class="set__variant" :class="{ active: config?.opponent === 'user' }" @click="setOpponent('user')">User</button>
+        <button type="button" class="set__variant" :class="{ active: config?.opponent === 'comp' }" @click="setOpponent('comp')">Computer</button>
+      </div>
+    </div>
+    <div class="set__mode">
+      <h4 class="set__modeName">Side</h4>
+      <div class="set__variants">
+        <button type="button" class="set__variant" :class="{ active: config?.side === 'x' }" @click="setSide('x')">X</button>
+        <button type="button" class="set__variant" :class="{ active: config?.side === 'o' }" @click="setSide('o')">O</button>
+      </div>
+    </div>
+    <div class="set__mode">
+      <h4 class="set__modeName">Difficulty</h4>
+      <div class="set__variants">
+        <button type="button" class="set__variant" :class="{ active: config?.difficulty === 'easy' }" @click="setDifficulty('easy')">Easy</button>
+        <button type="button" class="set__variant" :class="{ active: config?.difficulty === 'hard' }" @click="setDifficulty('hard')">Hard</button>
       </div>
     </div>
   </section>
@@ -25,7 +46,7 @@
 <script lang="ts">
   import { defineComponent, type PropType } from 'vue';
   import SvgIcon from '@/svg/SvgIcon.vue';
-  import type { GameStatus, BoardSize } from '@/types/models/tictactoe';
+  import type { GameStatus, BoardSize, Config, Level, Player, Opponent } from '@/types/models/tictactoe';
 
   export default defineComponent({
     name: 'Settings',
@@ -41,12 +62,12 @@
         type: Number,
         required: true,
       },
-      boardSize: {
-        type: Number as PropType<3 | 5 | 7>,
-        required: true,
+      config: {
+        type: Object as PropType<Config>,
+        requird: true,
       },
     },
-    emits: ['start', 'cancel', 'returnMove', 'setSize'],
+    emits: ['start', 'cancel', 'returnMove', 'setConfig'],
     setup(props, context) {
       // methods
       const start = (): void => {
@@ -64,9 +85,21 @@
         context.emit('returnMove');
       };
 
-      const setSize = (size: BoardSize): void => {
-        if (props.gameStatus === 'start' || props.boardSize === size) return;
-        context.emit('setSize', size);
+      const setSize = (boardSize: BoardSize): void => {
+        if (props.gameStatus === 'start' || props.config?.boardSize === boardSize) return;
+        context.emit('setConfig', { boardSize } as Config);
+      };
+
+      const setOpponent = (opponent: Opponent): void => {
+        context.emit('setConfig', { opponent } as Config);
+      };
+
+      const setSide = (side: Player): void => {
+        context.emit('setConfig', { side } as Config);
+      };
+
+      const setDifficulty = (difficulty: Level): void => {
+        context.emit('setConfig', { difficulty } as Config);
       };
 
       return {
@@ -74,6 +107,9 @@
         cancel,
         returnMove,
         setSize,
+        setOpponent,
+        setSide,
+        setDifficulty,
       };
     },
   });
@@ -124,6 +160,7 @@
 
     &__variants {
       @include Flex(row, space-between, center);
+      border-bottom: 1px solid white;
     }
 
     &__variant {
