@@ -1,0 +1,1 @@
+import{d as t,_ as o,c as n,a as s,w as a,r as c,o as r,b as _}from"./index-60a8a639.js";const i=t({name:"Home",setup(){return{}}}),p={class:""};function d(m,l,u,f,x,k){const e=c("router-link");return r(),n("div",p,[s(e,{to:"/tic-tac-toe"},{default:a(()=>[_("TicTacToe")]),_:1})])}const $=o(i,[["render",d]]);export{$ as default};
