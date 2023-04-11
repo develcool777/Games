@@ -1,0 +1,1 @@
+import{d as n,_ as s,c as t,v as o,o as a}from"./index-28170f5b.js";const _=n({name:"Main",setup(){return{}}});const c={class:"main"};function r(e,d,i,p,l,u){return a(),t("main",c,[o(e.$slots,"default",{},void 0,!0)])}const f=s(_,[["render",r],["__scopeId","data-v-88e91548"]]);export{f as M};
