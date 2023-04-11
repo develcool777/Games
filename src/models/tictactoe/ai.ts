@@ -142,9 +142,7 @@ export default class AI {
 
     this.getAvailableMoves.forEach(move => {
       this.board[move.x][move.y] = this.aiSide;
-      const score = this.minMax(0, false);
-
-      // Undo the move
+      const score = this.minMax(0, -Infinity, Infinity, false);
       this.board[move.x][move.y] = '';
 
       if (score > bestScore) {
@@ -156,32 +154,44 @@ export default class AI {
     return bestMove;
   };
 
-  private minMax = (depth: number, isMax: boolean): number => {
+  private minMax = (depth: number, alpha: number, beta: number, isMax: boolean): number => {
     const result = this.defineResult();
     if (result !== '') return this.score[result];
 
+    const aMoves = this.getAvailableMoves;
+
     if (isMax) {
       let bestScore = -Infinity;
-      this.getAvailableMoves.forEach(move => {
+      for (let i = 0; i < aMoves.length; i++) {
+        const move = aMoves[i];
+
         this.board[move.x][move.y] = this.aiSide;
-
-        const score = this.minMax(depth + 1, false);
-        bestScore = Math.max(bestScore, score);
-
+        const score = this.minMax(depth + 1, alpha, beta, false);
         this.board[move.x][move.y] = '';
-      });
+
+        bestScore = Math.max(bestScore, score);
+        alpha = Math.max(alpha, bestScore);
+
+        // Alpha Beta Pruning
+        if (beta <= alpha) break;
+      }
       return bestScore;
     }
 
     let bestScore = Infinity;
-    this.getAvailableMoves.forEach(move => {
+    for (let i = 0; i < aMoves.length; i++) {
+      const move = aMoves[i];
+
       this.board[move.x][move.y] = this.aiSide === 'x' ? 'o' : 'x';
-
-      const score = this.minMax(depth + 1, true);
-      bestScore = Math.min(bestScore, score);
-
+      const score = this.minMax(depth + 1, alpha, beta, true);
       this.board[move.x][move.y] = '';
-    });
+
+      bestScore = Math.min(bestScore, score);
+      beta = Math.min(beta, bestScore);
+
+      // Alpha Beta Pruning
+      if (beta <= alpha) break;
+    }
     return bestScore;
   };
 }
