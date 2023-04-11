@@ -17,13 +17,16 @@ export default class AI {
     };
   }
 
+  private get getAmoutOfCells(): number {
+    return Math.pow(this.boardSize, 2);
+  }
+
   private get getDiagonals(): Cell[][] {
-    const amountOfWinCells = this.boardSize === 3 ? 3 : 4;
     const diagonals: Cell[][] = [];
     let diagonal: Cell[] = [];
 
     const pushAndReset = (): void => {
-      if (diagonal.length >= amountOfWinCells) diagonals.push(diagonal);
+      if (diagonal.length >= this.getAmountOfWinCells) diagonals.push(diagonal);
       diagonal = [];
     };
 
@@ -78,32 +81,46 @@ export default class AI {
     }, [] as Coordinates[]);
   }
 
+  private get getAmountOfMadeMoves(): number {
+    return this.board.reduce((acc, row) => {
+      row.forEach(cell => (acc += Number(cell !== '')));
+      return acc;
+    }, 0);
+  }
+
+  private get getIsAvoidChecking(): boolean {
+    const avoidChecking = this.boardSize === 3 ? 5 : 7;
+    return this.getAmountOfMadeMoves < avoidChecking;
+  }
+
+  private get getAmountOfWinCells(): number {
+    return this.boardSize === 3 ? 3 : 4;
+  }
+
   public makeMove = (level: Level): Coordinates | null => {
     switch (level) {
       case 'easy':
         return this.easyMove();
-      case 'normal':
-        return this.normalMove();
       case 'hard':
         return this.hardMove();
     }
   };
 
   private isWin = (row: Cell[]): Result => {
-    const amountOfWinCells = this.boardSize === 3 ? 3 : 4;
-
     const winRow = row.reduce((acc, cell) => {
-      if (acc.length === amountOfWinCells) return acc;
+      if (acc.length === this.getAmountOfWinCells) return acc;
       if (cell === '' || (acc.length !== 0 && acc.at(-1) !== cell)) acc = [];
       acc.push(cell);
 
       return acc;
     }, [] as Cell[]);
 
-    return winRow.length === amountOfWinCells ? winRow[0] : '';
+    return winRow.length === this.getAmountOfWinCells ? winRow[0] : '';
   };
 
   private defineResult = (): Result => {
+    if (this.getIsAvoidChecking) return '';
+
     // rows
     for (let i = 0; i < this.boardSize; i++) {
       const isWin = this.isWin(this.board[i]);
@@ -124,16 +141,12 @@ export default class AI {
       if (isWin !== '') return isWin;
     }
 
-    return this.getAvailableMoves.length === 0 ? 'd' : '';
+    return this.getAmountOfMadeMoves === this.getAmoutOfCells ? 'd' : '';
   };
 
   private easyMove = (): Coordinates => {
     const aMoves = this.getAvailableMoves;
     return aMoves[Math.floor(Math.random() * aMoves.length)];
-  };
-
-  private normalMove = (): Coordinates => {
-    return { x: 1, y: 1 };
   };
 
   private hardMove = (): Coordinates | null => {
@@ -157,6 +170,8 @@ export default class AI {
   private minMax = (depth: number, alpha: number, beta: number, isMax: boolean): number => {
     const result = this.defineResult();
     if (result !== '') return this.score[result];
+    // approximate evaluation should be here
+    if (depth === 3) return 0;
 
     const aMoves = this.getAvailableMoves;
 

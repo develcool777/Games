@@ -66,7 +66,7 @@ export default class Game {
     };
   }
 
-  private get amoutOfCells(): number {
+  private get getAmoutOfCells(): number {
     return Math.pow(this.boardSize.value, 2);
   }
 
@@ -190,6 +190,7 @@ export default class Game {
     this.gameStatus.value = '';
     this.history.value = [];
     this.winCells.value = [];
+    this.terminateWorker();
   };
 
   private createBoard = (): Board => {
@@ -277,7 +278,7 @@ export default class Game {
     for (let i = 0; i < diagonals[0].length; i++) this.isWin(diagonals[0][i], diagonals[1][i]);
 
     if (this.result.value !== '') return;
-    this.result.value = this.getHistoryLength === this.amoutOfCells ? 'd' : '';
+    this.result.value = this.getHistoryLength === this.getAmoutOfCells ? 'd' : '';
   };
 
   public startGame = (): void => {
